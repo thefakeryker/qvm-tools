@@ -15,49 +15,86 @@ jobs:
     name: Linux
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v4
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
-    - name: Compile
-      run: |
-        cmake -S . -B build -G Ninja
-        cmake --build build
-    - name: Upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ github.event.repository.name }}-linux-${{ env.VERSION }}
-        path: |
-          build/Release/**/*
+      - uses: actions/checkout@v4
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+      - name: Compile
+        run: |
+          cmake -S . -B build -G Ninja
+          cmake --build build
+      - name: Zip Build
+        run: |
+          zip -r qvm-tools-linux-x86.zip build/Release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./qvm-tools-linux-x86.zip
+          asset_name: qvm-tools-linux-x86.zip
+          asset_content_type: application/zip
+
   windows-mingw:
     name: Windows MinGW
     runs-on: windows-2022
     steps:
-    - uses: actions/checkout@v4
-    - name: Compile
-      run: |
-        cmake -S . -B build -G Ninja
-        cmake --build build
-    - name: Upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ github.event.repository.name }}-windows-mingw-${{ env.VERSION }}
-        path: |
-          build/Release/**/*.dll
-          build/Release/**/*.exe
-          build/Release/**/*.qvm
+      - uses: actions/checkout@v4
+      - name: Compile
+        run: |
+          cmake -S . -B build -G Ninja
+          cmake --build build
+      - name: Zip Build
+        shell: pwsh
+        run: |
+          Compress-Archive -Path build/Release/* -DestinationPath qvm-tools-windows-mingw-x86.zip
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./qvm-tools-windows-mingw-x86.zip
+          asset_name: qvm-tools-windows-mingw-x86.zip
+          asset_content_type: application/zip
+
   macos:
     name: macOS
     runs-on: macos-13
     steps:
-    - uses: actions/checkout@v4
-    - name: Compile
-      run: |
-        cmake -S . -B build -G Ninja
-        cmake --build build
-    - name: Upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ github.event.repository.name }}-macOS-${{ env.VERSION }}
-        path: |
-          build/Release/**/*
+      - uses: actions/checkout@v4
+      - name: Compile
+        run: |
+          cmake -S . -B build -G Ninja
+          cmake --build build
+      - name: Zip Build
+        run: |
+          zip -r qvm-tools-macos-x86.zip build/Release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./qvm-tools-macos-x86.zip
+          asset_name: qvm-tools-macos-x86.zip
+          asset_content_type: application/zip
