@@ -1,23 +1,13 @@
-name: Build
 on:
-  pull_request:
-    paths-ignore:
-      - '**.md'
-      - '*.txt'
-      - '.gitignore'
-      - '.gitattributes'
-      - 'COPYRIGHT'
   push:
-    branches:
-      - master
+    tags:
+      - 'v*.*.*' # Trigger only on tags like v1.2.3
     paths-ignore:
       - '**.md'
       - '*.txt'
       - '.gitignore'
       - '.gitattributes'
       - 'COPYRIGHT'
-  release:
-    types: [published]
   workflow_dispatch:
 
 jobs:
