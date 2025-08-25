@@ -83,22 +83,22 @@ jobs:
           title: Latest Build
           files: *.zip
 
-    update-release:
-      if: ${{ github.event_name == 'release' }}
-      needs: [linux, windows-mingw, macos]
-      runs-on: ubuntu-latest
+      update-release:
+        if: ${{ github.event_name == 'release' }}
+        needs: [linux, windows-mingw, macos]
+        runs-on: ubuntu-latest
 
-      strategy:
-        matrix:
-          include:
-            - artifact_dir: linux-build
-              artifact_name: qvm-tools-linux-x86_64.zip
+        strategy:
+          matrix:
+            include:
+              - artifact_dir: linux-build
+                artifact_name: qvm-tools-linux-x86_64.zip
 
-            - artifact_dir: windows-mingw-build
-              artifact_name: qvm-tools-windows-mingw-x86_64.zip
+              - artifact_dir: windows-mingw-build
+                artifact_name: qvm-tools-windows-mingw-x86_64.zip
 
-            - artifact_dir: macos-build
-              artifact_name: qvm-tools-macos-x86_64.zip
+              - artifact_dir: macos-build
+                artifact_name: qvm-tools-macos-x86_64.zip
 
       steps:
         - name: Download Artifacts
