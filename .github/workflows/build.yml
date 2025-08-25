@@ -1,6 +1,5 @@
 name: Build
-on:
-  workflow_dispatch:
+on: [ workflow_dispatch ]
 
 jobs:
   linux:
@@ -74,38 +73,49 @@ jobs:
         run: |
           cd macos-build
           zip -r qvm-tools-macos-x86_64.zip lburg q3asm q3cpp q3lcc q3rcc stringify
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create latest build
+        uses: czietz/action-automatic-releases@latest
         with:
-          tag_name: latest
-          release_name: Latest Release
-          draft: false
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: "latest"
           prerelease: false
-      - name: Upload Linux Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./qvm-tools-linux-x86_64.zip
-          asset_name: qvm-tools-linux-x86_64.zip
-          asset_content_type: application/Zip
-      - name: Upload Windows MinGW Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: qvm-tools-windows-mingw-x86_64.zip
-          asset_content_type: application/zip
-      - name: Upload MacOS Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: qvm-tools-macos-x86_64.zip
-          asset_content_type: application/zip
+          title: Latest Build
+          files: *.zip
+
+    update-release:
+      if: ${{ github.event_name == 'release' }}
+      needs: [linux, windows-mingw, macos]
+      runs-on: ubuntu-latest
+
+      strategy:
+        matrix:
+          include:
+            - artifact_dir: linux-build
+              artifact_name: qvm-tools-linux-x86_64.zip
+
+            - artifact_dir: windows-mingw-build
+              artifact_name: qvm-tools-windows-mingw-x86_64.zip
+
+            - artifact_dir: macos-build
+              artifact_name: qvm-tools-macos-x86_64.zip
+
+      steps:
+        - name: Download Artifacts
+          uses: actions/download-artifact@v4
+
+        - name: Create archive
+          if: ${{ matrix.artifact_dir != 'windows-mingw-build' }}
+          run: 7z a -r ${{ matrix.artifact_name }} ./${{ matrix.artifact_dir }}/lburg ./${{ matrix.artifact_dir }}/q3asm ./${{ matrix.artifact_dir }}/q3cpp ./${{ matrix.artifact_dir }}/q3lcc ./${{ matrix.artifact_dir }}/q3rcc ./${{ matrix.artifact_dir }}/stringify
+
+        - name: Create archive windows
+          if: ${{ matrix.artifact_dir == 'windows-mingw-build' }}
+          run: 7z a -r ${{ matrix.artifact_name }} ./${{ matrix.artifact_dir }}/lburg.exe ./${{ matrix.artifact_dir }}/q3asm.exe ./${{ matrix.artifact_dir }}/q3cpp.exe ./${{ matrix.artifact_dir }}/q3lcc.exe ./${{ matrix.artifact_dir }}/q3rcc.exe ./${{ matrix.artifact_dir }}/stringify.exe
+
+        - name: Upload archive
+          uses: "svenstaro/upload-release-action@latest"
+          with:
+            repo_token: ${{ secrets.GITHUB_TOKEN }}
+            tag: ${{ github.ref }}
+            overwrite: true
+            file: ${{ matrix.artifact_name }}
