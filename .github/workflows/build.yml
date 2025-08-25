@@ -30,6 +30,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Compile
+      shell: pwsh
       run: |
         cmake -S . -B build -G Ninja
         cmake --build build
