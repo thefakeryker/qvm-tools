@@ -81,6 +81,7 @@ jobs:
           release_name: Latest Release
           draft: false
           prerelease: false
+        env:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Release Assets
         run: |
