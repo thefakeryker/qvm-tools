@@ -65,17 +65,17 @@ jobs:
       - name: Zip Linux Build
         run: |
           cd linux-build
-          zip -r quake3e-linux-x86_64.zip lburg q3asm q3cpp q3lcc q3rcc stringify
+          zip -r qvm-tools-linux-x86_64.zip lburg q3asm q3cpp q3lcc q3rcc stringify
       - name: Zip Windows Build
         run: |
           cd windows-mingw-build
-          zip -r quake3e-windows-mingw-x86_64.zip lburg.exe q3asm.exe q3cpp.exe q3lcc.exe q3rcc.exe stringify.exe
+          zip -r qvm-tools-windows-mingw-x86_64.zip lburg.exe q3asm.exe q3cpp.exe q3lcc.exe q3rcc.exe stringify.exe
       - name: Zip macOS Build
         run: |
           cd macos-build
-          zip -r quake3e-macos-x86_64.zip lburg q3asm q3cpp q3lcc q3rcc stringify
+          zip -r qvm-tools-macos-x86_64.zip lburg q3asm q3cpp q3lcc q3rcc stringify
       - name: Upload Release Assets
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload latest quake3e-linux-x86_64.zip quake3e-windows-mingw-x86_64.zip quake3e-macos-x86_64.zip
+          gh release upload latest qvm-tools-linux-x86_64.zip qvm-tools-windows-mingw-x86_64.zip qvm-tools-macos-x86_64.zip
