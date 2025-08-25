@@ -74,8 +74,30 @@ jobs:
         run: |
           cd macos-build
           zip -r qvm-tools-macos-x86_64.zip lburg q3asm q3cpp q3lcc q3rcc stringify
-      - name: Upload Release Assets
+      - name: Upload Linux Release Asset
+        uses: actions/upload-release-asset@v1
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create latest linux-build/qvm-tools-linux-x86_64.zip windows-mingw-build/qvm-tools-windows-mingw-x86_64.zip macos-build/qvm-tools-macos-x86_64.zip
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./qvm-tools-linux-x86_64.zip
+          asset_name: qvm-tools-linux-x86_64.zip
+          asset_content_type: application/Zip
+      - name: Upload Windows MinGW Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./qvm-tools-windows-mingw-x86_64.zip
+          asset_name: qvm-tools-windows-mingw-x86_64.zip
+          asset_content_type: application/zip
+      - name: Upload MacOS Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./qvm-tools-macos-x86_64.zip
+          asset_name: qvm-tools-macos-x86_64.zip
+          asset_content_type: application/zip
