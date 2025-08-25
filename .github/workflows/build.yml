@@ -1,13 +1,4 @@
 on:
-  push:
-    tags:
-      - 'v*.*.*' # Trigger only on tags like v1.2.3
-    paths-ignore:
-      - '**.md'
-      - '*.txt'
-      - '.gitignore'
-      - '.gitattributes'
-      - 'COPYRIGHT'
   workflow_dispatch:
 
 jobs:
