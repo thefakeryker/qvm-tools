@@ -75,5 +75,7 @@ jobs:
           cd macos-build
           zip -r quake3e-macos-x86_64.zip lburg q3asm q3cpp q3lcc q3rcc stringify
       - name: Upload Release Assets
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload latest quake3e-linux-x86_64.zip quake3e-windows-mingw-x86_64.zip quake3e-macos-x86_64.zip
