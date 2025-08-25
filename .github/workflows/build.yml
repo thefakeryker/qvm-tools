@@ -1,8 +1,24 @@
 name: Build
 on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - '*.txt'
+      - '.gitignore'
+      - '.gitattributes'
+      - 'COPYRIGHT'
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '**.md'
+      - '*.txt'
+      - '.gitignore'
+      - '.gitattributes'
+      - 'COPYRIGHT'
+  release:
+    types: [published]
   workflow_dispatch:
-  schedule:
-    - cron: "0 0 * * 0"  # runs weekly on Sunday at midnight UTC
 
 jobs:
   linux:
