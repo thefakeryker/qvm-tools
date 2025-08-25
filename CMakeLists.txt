@@ -68,6 +68,10 @@ set(LBURG_SOURCES
     ${SOURCE_DIR}/tools/lcc/lburg/gram.c
 )
 
+set(STRINGIFY_SOURCES
+    ${SOURCE_DIR}/tools/stringify.c
+)
+
 add_executable(q3asm ${Q3ASM_SOURCES})
 target_compile_options(q3asm PRIVATE -fno-strict-aliasing)
 set_output_dirs(q3asm)
@@ -90,3 +94,6 @@ target_include_directories(q3rcc PRIVATE ${SOURCE_DIR}/tools/lcc/src)
 
 add_executable(q3cpp ${Q3CPP_SOURCES})
 set_output_dirs(q3cpp)
+
+add_executable(stringify ${STRINGIFY_SOURCES})
+set_output_dirs(stringify)
