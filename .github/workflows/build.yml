@@ -3,67 +3,84 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build and Release
-    runs-on: ubuntu-latest
+  linux:
+    name: Linux
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-
-      - name: Build Linux
+      - name: Install Dependencies
         run: |
-          cmake -S . -B build-linux -G Ninja
-          cmake --build build-linux
-          zip -j qvm-tools-linux-${{ runner.arch }}.zip build-linux/lburg build-linux/q3asm build-linux/q3cpp build-linux/q3lcc build-linux/q3rcc build-linux/stringify
-
-      - name: Build Windows MinGW
-        uses: msys2/setup-msys2@v2
+          sudo apt-get update
+      - name: Compile
+        run: |
+          cmake -S . -B build -G Ninja
+          cmake --build build
+      - uses: actions/upload-artifact@v4
         with:
-          msystem: MINGW64
-          install: mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
-        run: |
-          cmake -S . -B build-windows -G Ninja
-          cmake --build build-windows
-          Compress-Archive -Path build-windows/lburg.exe, build-windows/q3asm.exe, build-windows/q3cpp.exe, build-windows/q3lcc.exe, build-windows/q3rcc.exe, build-windows/stringify.exe -DestinationPath qvm-tools-windows-${{ runner.arch }}.zip
+          name: linux-build
+          path: build
+          if-no-files-found: error
+          retention-days: 5
 
-      - name: Build macOS
+  windows-mingw:
+    name: Windows MinGW
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile
         run: |
-          cmake -S . -B build-macos -G Ninja
-          cmake --build build-macos
-          zip -j qvm-tools-macos-${{ runner.arch }}.zip build-macos/lburg build-macos/q3asm build-macos/q3cpp build-macos/q3lcc build-macos/q3rcc build-macos/stringify
-        shell: bash # for consistency
-
-      - name: Delete existing latest release
-        uses: dev-drprasad/delete-tag-and-release@v1
+          cmake -S . -B build -G Ninja
+          cmake --build build
+      - uses: actions/upload-artifact@v4
         with:
-          tag_name: latest
-          repo: ${{ github.repository }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          name: windows-mingw-build
+          path: build
+          if-no-files-found: error
+          retention-days: 5
 
+  macos:
+    name: macOS
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile
+        run: |
+          cmake -S . -B build -G Ninja
+          cmake --build build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: build
+          if-no-files-found: error
+          retention-days: 5
+
+  create-release:
+    needs: [linux, windows-mingw, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: .
+      - name: Zip Linux Build
+        run: |
+          cd linux-build
+          zip -r quake3e-linux-x86_64.zip lburg q3asm q3cpp q3lcc q3rcc stringify
+      - name: Zip Windows Build
+        run: |
+          cd windows-mingw-build
+          zip -r quake3e-windows-mingw-x86_64.zip lburg.exe q3asm.exe q3cpp.exe q3lcc.exe q3rcc.exe stringify.exe
+      - name: Zip macOS Build
+        run: |
+          cd macos-build
+          zip -r quake3e-macos-x86_64.zip lburg q3asm q3cpp q3lcc q3rcc stringify
       - name: Create Release
-        id: create_release
         uses: actions/create-release@v1
         with:
           tag_name: latest
           release_name: Latest Release
           draft: false
           prerelease: false
-
       - name: Upload Release Assets
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./qvm-tools-linux-${{ runner.arch }}.zip
-          asset_name: qvm-tools-linux-${{ runner.arch }}.zip
-          asset_content_type: application/zip
-      - uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./qvm-tools-windows-${{ runner.arch }}.zip
-          asset_name: qvm-tools-windows-${{ runner.arch }}.zip
-          asset_content_type: application/zip
-      - uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./qvm-tools-macos-${{ runner.arch }}.zip
-          asset_name: qvm-tools-macos-${{ runner.arch }}.zip
-          asset_content_type: application/zip
+        run: |
+          gh release upload latest quake3e-linux-x86_64.zip quake3e-windows-mingw-x86_64.zip quake3e-macos-x86_64.zip
