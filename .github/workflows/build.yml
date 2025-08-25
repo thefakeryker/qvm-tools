@@ -81,7 +81,7 @@ jobs:
           release_name: Latest Release
           draft: false
           prerelease: false
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Release Assets
         run: |
           gh release upload latest quake3e-linux-x86_64.zip quake3e-windows-mingw-x86_64.zip quake3e-macos-x86_64.zip
